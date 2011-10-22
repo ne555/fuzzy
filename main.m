@@ -9,6 +9,7 @@
 %conj_caliente=[0.25 0.5 0.75];
 %conj_muy_caliente=[0.5 1 1.5];
 
+%Definicion de los conjuntos de entrada
 conj_muy_frio=[-1.5 -1 -0.7];
 conj_frio=[-0.8 -0.5 -0.2];
 conj_poco_frio=[-0.55 -0.25 0.05];
@@ -21,6 +22,7 @@ conjuntos_entrada = [conj_muy_frio; conj_frio; conj_poco_frio; conj_templado; co
 
 nro_conjuntos_e = size(conjuntos_entrada)(1);
 
+%Definicion de los conjuntos de salida
 conj_calentar_mucho=[-1.5 -1 -0.5];
 conj_calentar=[-0.75 -0.5 -0.25];
 conj_calentar_poco=[-0.5 -0.25 0];
@@ -91,13 +93,62 @@ for i = 1 : nro_conjuntos_s
 end
 
 % Reglas
+global si_muy_frio_calentar_mucho = correlation_minimum(fit_vectors_entrada(1, :), fit_vectors_salida(1, :));
+global si_frio_calentar = correlation_minimum(fit_vectors_entrada(2, :), fit_vectors_salida(2, :));
+global si_poco_frio_calentar_poco = correlation_minimum(fit_vectors_entrada(3, :), fit_vectors_salida(3, :));
+global si_templado_no_hacer_nada = correlation_minimum(fit_vectors_entrada(4, :), fit_vectors_salida(4, :));
+global si_poco_caliente_enfriar_poco = correlation_minimum(fit_vectors_entrada(5, :), fit_vectors_salida(5, :));
+global si_caliente_enfriar = correlation_minimum(fit_vectors_entrada(6, :), fit_vectors_salida(6, :));
+global si_muy_caliente_enfriar_mucho = correlation_minimum(fit_vectors_entrada(7, :), fit_vectors_salida(7, :));
+global tam_rules = size(si_muy_frio_calentar_mucho);
+global n_rules = 7;
 
-si_muy_frio_calentar_mucho = correlation_minimum(fit_vectors_entrada(1, :), fit_vectors_salida(1, :));
-si_frio_calentar = correlation_minimum(fit_vectors_entrada(2, :), fit_vectors_salida(2, :));
-si_poco_frio_calentar_poco = correlation_minimum(fit_vectors_entrada(3, :), fit_vectors_salida(3, :));
-si_templado_no_hacer_nada = correlation_minimum(fit_vectors_entrada(4, :), fit_vectors_salida(4, :));
-si_poco_caliente_enfriar_poco = correlation_minimum(fit_vectors_entrada(5, :), fit_vectors_salida(5, :));
-si_caliente_enfriar = correlation_minimum(fit_vectors_entrada(6, :), fit_vectors_salida(6, :));
-si_muy_caliente_enfriar_mucho = correlation_minimum(fit_vectors_entrada(7, :), fit_vectors_salida(7, :));
+function salida = regulizate(fuzzy)
+	global si_muy_frio_calentar_mucho 
+	global si_frio_calentar 
+	global si_poco_frio_calentar_poco 
+	global si_templado_no_hacer_nada 
+	global si_poco_caliente_enfriar_poco 
+	global si_caliente_enfriar 
+	global si_muy_caliente_enfriar_mucho 
+	global n_rules;
+	global tam_rules;
+	salida = zeros(n_rules, tam_rules(2));
+	salida(1,:) = max_min_composition(fuzzy, si_muy_frio_calentar_mucho);
+	salida(2,:) = max_min_composition(fuzzy, si_frio_calentar);
+	salida(3,:) = max_min_composition(fuzzy, si_poco_frio_calentar_poco);
+	salida(4,:) = max_min_composition(fuzzy, si_templado_no_hacer_nada);
+	salida(5,:) = max_min_composition(fuzzy, si_poco_caliente_enfriar_poco);
+	salida(6,:) = max_min_composition(fuzzy, si_caliente_enfriar);
+	salida(7,:) = max_min_composition(fuzzy, si_muy_caliente_enfriar_mucho);
+end
+
+function salida = defuzzycate(pertenencia, conjunto)
+	n = length(pertenencia);
+	cent_parcial = zeros(n,1);
+	area_parcial = zeros(size(pertenencia));
+	for K=[1:n]
+		[cent_parcial(K), area_parcial(K)] = centroide(conjunto(K,:));
+	end
+	area_parcial = pertenencia .* area_parcial; %escalo
+	area_total = sum(area_parcial); 
+	cent_accum = dot(cent_parcial, area_parcial);
+	salida = cent_accum/area_total;
+end
+
+%Entrada/Salida
+%fuzzyficacion
+n = 100;
+entrada = linspace(-1,1,n)';
+salida = zeros(size(entrada));
+
+for K = [1:length(entrada)]
+	entrada_fuzzy = fit_vector(entrada(K),conjuntos_entrada); 
+	salida_fuzzy = regulizate(entrada_fuzzy);
+	pertenencia_salida = max(salida_fuzzy); %porque las reglas fueron de tipo max_min
+	%pertenencia_salida = sum(salida_fuzzy); %porque las reglas fueron de tipo producto
+	salida(K) = defuzzycate(pertenencia_salida, conjuntos_salida); %centroide, maximo, etc...
+end
+
 
 
