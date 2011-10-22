@@ -45,6 +45,9 @@ function [v,i] = controlador(entrada)
 
 	conjuntos_salida = [conj_calentar_mucho; conj_calentar; conj_calentar_poco; conj_no_hacer_nada; conj_enfriar_poco; conj_enfriar; conj_enfriar_mucho];
 
+	%figure;plot(conjuntos_entrada');
+	%figure;plot(conjuntos_salida');
+
 	nro_conjuntos_s = size(conjuntos_salida)(1);
 
 	% Funciones
@@ -60,15 +63,24 @@ function [v,i] = controlador(entrada)
 	end
 
 	% Reglas
-	global si_muy_frio_calentar_mucho = correlation_minimum(fit_vectors_entrada(1, :), fit_vectors_salida(1, :));
-	global si_frio_calentar = correlation_minimum(fit_vectors_entrada(2, :), fit_vectors_salida(2, :));
-	global si_poco_frio_calentar_poco = correlation_minimum(fit_vectors_entrada(3, :), fit_vectors_salida(3, :));
-	global si_templado_no_hacer_nada = correlation_minimum(fit_vectors_entrada(4, :), fit_vectors_salida(4, :));
-	global si_poco_caliente_enfriar_poco = correlation_minimum(fit_vectors_entrada(5, :), fit_vectors_salida(5, :));
-	global si_caliente_enfriar = correlation_minimum(fit_vectors_entrada(6, :), fit_vectors_salida(6, :));
-	global si_muy_caliente_enfriar_mucho = correlation_minimum(fit_vectors_entrada(7, :), fit_vectors_salida(7, :));
-	global tam_rules = size(si_muy_frio_calentar_mucho);
-	global n_rules = 7;
+	global si_muy_frio_calentar_mucho;
+	global si_frio_calentar;
+	global si_poco_frio_calentar_poco;
+	global si_templado_no_hacer_nada;
+	global si_poco_caliente_enfriar_poco;
+	global si_caliente_enfriar;
+	global si_muy_caliente_enfriar_mucho;
+	global tam_rules;
+	global n_rules;
+	si_muy_frio_calentar_mucho = correlation_minimum(fit_vectors_entrada(1, :), fit_vectors_salida(1, :));
+	si_frio_calentar = correlation_minimum(fit_vectors_entrada(2, :), fit_vectors_salida(2, :));
+	si_poco_frio_calentar_poco = correlation_minimum(fit_vectors_entrada(3, :), fit_vectors_salida(3, :));
+	si_templado_no_hacer_nada = correlation_minimum(fit_vectors_entrada(4, :), fit_vectors_salida(4, :));
+	si_poco_caliente_enfriar_poco = correlation_minimum(fit_vectors_entrada(5, :), fit_vectors_salida(5, :));
+	si_caliente_enfriar = correlation_minimum(fit_vectors_entrada(6, :), fit_vectors_salida(6, :));
+	si_muy_caliente_enfriar_mucho = correlation_minimum(fit_vectors_entrada(7, :), fit_vectors_salida(7, :));
+	tam_rules = size(si_muy_frio_calentar_mucho);
+	n_rules = 7;
 
 	entrada_fuzzy = fit_vector(entrada,conjuntos_entrada); 
 	salida_fuzzy = regulizate(entrada_fuzzy);
@@ -78,7 +90,7 @@ function [v,i] = controlador(entrada)
 
 %Mapeo inverso de la salida a los valores de v y i
     if(salida<0)
-		v = -salida*1000;
+		v = -salida*220;
 		i = 0;
 	else
 		v = 0;

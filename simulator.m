@@ -1,4 +1,4 @@
-t_fin = 6;
+t_fin = 7;
 n = 100;
 t = linspace(0,t_fin,n)';
 
@@ -19,16 +19,18 @@ puerta = zeros(size(t));
 
 T_e = -2.5*ones(size(t));
 T_r = ones(size(t));
-T_i(1) = T_r(1);
-T_i(2) = T_r(2);
+T_i(1) = 2*T_r(1);
+T_i(2) = 2*T_r(2);
 
 for K = [3:n]
 	%[v(K),i(K)] = fuzzy_controller( T_i(K-1), T_r(K), T_e(K) );
-	[v(K),i(K)] = controlador( T_r(K)-T_e(K-1) );
+	[v(K),i(K)] = controlador( T_r(K)-T_i(K-1) );
 	if(puerta(K))
-		T_i(K) = 0.912*T_i(K-1) + 0.088*T_e(K) + 0.604*i(K)^2 - 12.1*10^-3*v(K);
+		%T_i(K) = 0.912*T_i(K-1) + 0.088*T_e(K) + 0.604*i(K)^2 - 12.1*10^-3*v(K);
+		T_i(K) = 0.912*T_i(K-1) + 0*T_e(K) + 0.604*i(K)^2 - 12.1*10^-3*v(K);
 	else
-		T_i(K) = 0.169*T_i(K-1) + 0.831*T_e(K) + 0.112*i(K)^2 - 2*10^-3*v(K);
+		%T_i(K) = 0.169*T_i(K-1) + 0.831*T_e(K) + 0.112*i(K)^2 - 2*10^-3*v(K);
+		T_i(K) = 0.169*T_i(K-1) + 0*T_e(K) + 0.112*i(K)^2 - 12*10^-3*v(K);
 	end
 end
 
@@ -41,6 +43,7 @@ plot(t,T_e, 'b');
 hold off;
 
 figure(2);
-plot(t,v,'k');
+plot(t,v,'b');
+plot(t,i,'r');
 
 
