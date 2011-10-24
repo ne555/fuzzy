@@ -4,7 +4,8 @@ function [v,i] = controlador(entrada)
 	%entrada = diferencia entre temperatura actual y deseada
 
 	%la entrada se mapea a un rango [-1;1]
-	entrada = entrada/2.5;
+	max_delta = 2.5;
+	entrada = entrada/max_delta;
 	if entrada>1
 		entrada = 1;
 	elseif entrada < -1
@@ -22,26 +23,26 @@ function [v,i] = controlador(entrada)
 	%conj_muy_caliente=[0.5 1 1.5];
 
 	%Definicion de los conjuntos de entrada
-	conj_muy_frio=[-1.1 -1 -0.4];
-	conj_frio=[-0.8 -0.5 -0.1];
-	conj_poco_frio=[-0.4 -0.25 0.05];
-	conj_templado=[-0.2 0 0.2];
-	conj_poco_caliente=[-0.05 0.25 0.4];
-	conj_caliente=[0.1 0.5 0.8];
-	conj_muy_caliente=[0.4 1 1.1];
+	conj_muy_frio=[-1.1 -1 -0.1];
+	conj_frio=[-0.7 -0.6 -0.1];
+	conj_poco_frio=[-0.45 -0.1 0];
+	conj_templado=[-0.15 0 0.15];
+	conj_poco_caliente=[0 0.1 0.45];
+	conj_caliente=[0.1 0.2 0.7];
+	conj_muy_caliente=[0.5 1 1.1];
 
 	conjuntos_entrada = [conj_muy_frio; conj_frio; conj_poco_frio; conj_templado; conj_poco_caliente; conj_caliente; conj_muy_caliente];
 
 	nro_conjuntos_e = size(conjuntos_entrada)(1);
 
 	%Definicion de los conjuntos de salida
-	conj_calentar_mucho=[-1.5 -1 -0.5];
-	conj_calentar=[-0.75 -0.5 -0.25];
-	conj_calentar_poco=[-0.5 -0.25 0];
-	conj_no_hacer_nada=[-0.25 0 0.25];
-	conj_enfriar_poco=[0 0.25 0.5];
-	conj_enfriar=[0.25 0.5 0.75];
-	conj_enfriar_mucho=[0.5 1 1.5];
+	conj_calentar_mucho=[-1.1 -1 -0.5];
+	conj_calentar=[-0.7 -0.5 -0.3];
+	conj_calentar_poco=[-0.45 -0.25 -0.05];
+	conj_no_hacer_nada=[-0.2 0 0.2];
+	conj_enfriar_poco=[0.05 0.25 0.45];
+	conj_enfriar=[0.3 0.5 0.7];
+	conj_enfriar_mucho=[0.5 1 1.1];
 
 	conjuntos_salida = [conj_calentar_mucho; conj_calentar; conj_calentar_poco; conj_no_hacer_nada; conj_enfriar_poco; conj_enfriar; conj_enfriar_mucho];
 
@@ -61,6 +62,7 @@ function [v,i] = controlador(entrada)
 	for i = 1 : nro_conjuntos_s
 	  fit_vectors_salida(i, :) = fit_vector(conjuntos_salida(i, 2), conjuntos_salida);
 	end
+
 
 	% Reglas
 	global si_muy_frio_calentar_mucho;
@@ -87,13 +89,22 @@ function [v,i] = controlador(entrada)
 	pertenencia_salida = max(salida_fuzzy); %porque las reglas fueron de tipo max_min
 	%pertenencia_salida = sum(salida_fuzzy); %porque las reglas fueron de tipo producto
 	salida = defuzzycate(pertenencia_salida, conjuntos_salida); %centroide, maximo, etc...
+	
+	%fit_vectors_entrada
+	%fit_vectors_salida
+
+	%entrada_fuzzy
+	%salida_fuzzy
+	%salida
 
 %Mapeo inverso de la salida a los valores de v y i
+	vmax = 220;
+	imax = 1;
     if(salida<0)
-		v = -salida*220;
+		v = -salida*vmax;
 		i = 0;
 	else
 		v = 0;
-		i = sqrt(salida*100);
+		i = sqrt(salida*imax**2);
 	end
 end
